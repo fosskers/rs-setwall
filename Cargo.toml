@@ -1,0 +1,9 @@
+[package]
+name = "setwall"
+version = "1.0.0"
+authors = ["Colin Woodbury <colin@fosskers.ca>"]
+edition = "2018"
+
+[dependencies]
+rand = "0.7"
+structopt = {version = "0.3", default-features = false }
