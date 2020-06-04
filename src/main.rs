@@ -22,12 +22,13 @@ enum Args {
 
 fn main() -> io::Result<()> {
     match Args::from_args() {
-        Args::Set { image } => set_wallpaper(&image),
-        Args::Random { dir } => random_image(&dir).and_then(|p| set_wallpaper(&p)),
+        Args::Set { image } if image.is_file() => set_wall(&image),
+        Args::Random { dir } if dir.is_dir() => rand_img(&dir).and_then(|p| set_wall(&p)),
+        _ => Err(io::Error::new(io::ErrorKind::Other, "File does not exist!")),
     }
 }
 
-fn set_wallpaper(path: &Path) -> io::Result<()> {
+fn set_wall(path: &Path) -> io::Result<()> {
     Command::new("hsetroot")
         .arg("-fill")
         .arg(path)
@@ -36,7 +37,7 @@ fn set_wallpaper(path: &Path) -> io::Result<()> {
 }
 
 /// Fetches a random image file from some directory.
-fn random_image(dir: &Path) -> io::Result<PathBuf> {
+fn rand_img(dir: &Path) -> io::Result<PathBuf> {
     let files = fs::read_dir(dir)?;
     let mut rng = rand::thread_rng();
     let image = files
