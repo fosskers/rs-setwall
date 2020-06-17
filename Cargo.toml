@@ -1,8 +1,15 @@
 [package]
 name = "setwall"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2018"
+description = "A simple script for automating the setting of a wallpaper."
+homepage = "https://github.com/fosskers/rs-setwall"
+repository = "https://github.com/fosskers/rs-setwall"
+readme = "README.md"
+license = "MIT"
+keywords = ["wallpaper"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 gumdrop = "0.8"
