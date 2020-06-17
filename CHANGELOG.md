@@ -4,4 +4,5 @@
 
 #### Changed
 
-- Dropped `structopt` for `gumdrop`.
+- Dropped `structopt` for `gumdrop`. This reduced binary size by 20% and freed
+  up many dependencies.
