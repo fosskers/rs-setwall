@@ -1,29 +1,48 @@
 //! A glorified wrapper around `hsetroot`.
 
+use gumdrop::{Options, ParsingStyle};
 use rand::seq::IteratorRandom;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::{fs, io};
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-enum Args {
+#[derive(Options)]
+struct Args {
+    help: bool,
+
+    #[options(command)]
+    command: Option<Commands>,
+}
+
+#[derive(Options)]
+enum Commands {
     /// Set a specific image file as the background.
-    Set {
-        #[structopt(parse(from_os_str))]
-        image: PathBuf,
-    },
+    Set(Set),
     /// Choose a random image file from a given directory.
-    Random {
-        #[structopt(parse(from_os_str))]
-        dir: PathBuf,
-    },
+    Random(Random),
+}
+
+#[derive(Options)]
+struct Set {
+    #[options(free)]
+    image: PathBuf,
+}
+
+#[derive(Options)]
+struct Random {
+    #[options(free)]
+    dir: PathBuf,
 }
 
 fn main() -> io::Result<()> {
-    match Args::from_args() {
-        Args::Set { image } if image.is_file() => set_wall(&image),
-        Args::Random { dir } if dir.is_dir() => rand_img(&dir).and_then(|p| set_wall(&p)),
+    let args = Args::parse_args_or_exit(ParsingStyle::AllOptions);
+
+    match args.command {
+        Some(Commands::Set(Set { image })) if image.is_file() => set_wall(&image),
+        Some(Commands::Random(Random { dir })) if dir.is_dir() => {
+            let p = rand_img(&dir)?;
+            set_wall(&p)
+        }
         _ => Err(io::Error::new(io::ErrorKind::Other, "File does not exist!")),
     }
 }
@@ -33,7 +52,7 @@ fn set_wall(path: &Path) -> io::Result<()> {
         .arg("-fill")
         .arg(path)
         .output()
-        .map(|_| ())
+        .map(|_| ()) // TODO Any better way to do this?
 }
 
 /// Fetches a random image file from some directory.

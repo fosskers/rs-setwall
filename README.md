@@ -7,19 +7,14 @@ It assumes you have `hsetroot` installed.
 ## Usage
 
 ```
-setwall 1.0.0
+Usage: setwall [OPTIONS]
 
-USAGE:
-    setwall <SUBCOMMAND>
+Optional arguments:
+  -h, --help
 
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
-
-SUBCOMMANDS:
-    help      Prints this message or the help of the given subcommand(s)
-    random    Choose a random image file from a given directory
-    set       Set a specific image file as the background
+Available commands:
+  set     Set a specific image file as the background.
+  random  Choose a random image file from a given directory.
 ```
 
 ## Automation

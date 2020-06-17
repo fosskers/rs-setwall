@@ -5,5 +5,5 @@ authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2018"
 
 [dependencies]
+gumdrop = "0.8"
 rand = "0.7"
-structopt = {version = "0.3", default-features = false }
