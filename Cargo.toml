@@ -12,5 +12,6 @@ keywords = ["wallpaper"]
 categories = ["command-line-utilities"]
 
 [dependencies]
+anyhow = "1.0"
 gumdrop = "0.8"
 rand = "0.7"
