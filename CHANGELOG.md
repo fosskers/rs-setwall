@@ -1,5 +1,11 @@
 # setwall
 
+## 1.0.2 (2020-06-25)
+
+#### Fixed
+
+- Images with uppercase file extensions are now recognized.
+
 ## 1.0.1 (2020-06-17)
 
 #### Changed

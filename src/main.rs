@@ -95,5 +95,6 @@ fn they_are_images() {
     assert!(is_image(Path::new("foo.jpg")));
     assert!(is_image(Path::new("foo.png")));
     assert!(is_image(Path::new("foo.jpeg")));
+    assert!(is_image(Path::new("foo.JPEG")));
     assert!(!is_image(Path::new("foo.txt")));
 }

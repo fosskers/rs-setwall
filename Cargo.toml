@@ -1,6 +1,6 @@
 [package]
 name = "setwall"
-version = "1.0.1"
+version = "1.0.2"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2018"
 description = "A simple script for automating the setting of a wallpaper."
