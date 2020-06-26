@@ -80,7 +80,11 @@ fn rand_img(dir: &Path) -> anyhow::Result<PathBuf> {
 
 /// Extension must be lower case.
 fn is_image(path: &Path) -> bool {
-    match path.extension() {
+    match path
+        .extension()
+        .and_then(|p| p.to_str())
+        .map(|p| p.to_lowercase())
+    {
         Some(p) if p == "jpg" || p == "png" || p == "jpeg" => true,
         _ => false,
     }
