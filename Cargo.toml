@@ -1,6 +1,6 @@
 [package]
 name = "setwall"
-version = "1.0.2"
+version = "1.0.3"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2018"
 description = "A simple script for automating the setting of a wallpaper."
@@ -15,3 +15,6 @@ categories = ["command-line-utilities"]
 anyhow = "1.0"
 gumdrop = "0.8"
 rand = "0.7"
+
+[profile.release]
+lto = true
