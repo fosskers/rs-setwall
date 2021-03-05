@@ -1,15 +1,16 @@
-//! A glorified wrapper around `hsetroot`.
+//! Set your wallpaper on Wayland or X11.
 
 use anyhow::anyhow;
 use gumdrop::{Options, ParsingStyle};
 use rand::seq::IteratorRandom;
-use std::fs;
 use std::path::{Path, PathBuf};
-use std::process;
-use std::process::Command;
+use std::process::{self, Command};
+use std::{fs, str::FromStr};
 
+/// Set your wallpaper on Wayland or X11.
 #[derive(Options)]
 struct Args {
+    /// Print this help message.
     help: bool,
 
     #[options(command)]
@@ -26,14 +27,52 @@ enum Commands {
 
 #[derive(Options)]
 struct Set {
+    /// Print this help message.
+    help: bool,
+
+    /// The path to the image file.
     #[options(free)]
     image: PathBuf,
+
+    /// The target output compositor. (values: sway, x11 [default])
+    #[options(meta = "C")]
+    compositor: Compositor,
 }
 
 #[derive(Options)]
 struct Random {
+    /// Print this help message.
+    help: bool,
+
+    /// The path to choose an image file from.
     #[options(free)]
     dir: PathBuf,
+
+    /// The target output compositor.
+    compositor: Compositor,
+}
+
+enum Compositor {
+    Sway,
+    X11,
+}
+
+impl Default for Compositor {
+    fn default() -> Self {
+        Compositor::X11
+    }
+}
+
+impl FromStr for Compositor {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "x11" => Ok(Compositor::X11),
+            "sway" => Ok(Compositor::Sway),
+            _ => Err("Unsupported compositor type."),
+        }
+    }
 }
 
 fn main() {
@@ -50,12 +89,23 @@ fn main() {
 
 fn work(args: Args) -> anyhow::Result<()> {
     match args.command {
-        Some(Commands::Set(Set { image })) if image.is_file() => set_wall(&image),
-        Some(Commands::Random(Random { dir })) if dir.is_dir() => {
+        Some(Commands::Set(Set { image, .. })) if image.is_file() => set_wall(&image),
+        Some(Commands::Random(Random { dir, .. })) if dir.is_dir() => {
             let p = rand_img(&dir)?;
             set_wall(&p)
         }
-        _ => Err(anyhow!("File does not exist!")),
+        Some(_) => Err(anyhow!("File doesn't exist!")),
+        None => {
+            if let Some(cl) = Args::command_list() {
+                Err(anyhow!(format!(
+                    "{}\n\nAvailable commands:\n{}",
+                    Args::usage(),
+                    cl,
+                )))
+            } else {
+                Err(anyhow!("Something is wrong with the commandline flags."))
+            }
+        }
     }
 }
 

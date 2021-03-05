@@ -3,7 +3,7 @@ name = "setwall"
 version = "1.0.3"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2018"
-description = "A simple script for automating the setting of a wallpaper."
+description = "Set your wallpaper on Wayland or X11."
 homepage = "https://github.com/fosskers/rs-setwall"
 repository = "https://github.com/fosskers/rs-setwall"
 readme = "README.md"
@@ -14,7 +14,7 @@ categories = ["command-line-utilities"]
 [dependencies]
 anyhow = "1.0"
 gumdrop = "0.8"
-rand = "0.7"
+rand = "0.8"
 
 [profile.release]
 lto = true
