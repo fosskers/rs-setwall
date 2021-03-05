@@ -3,9 +3,12 @@
 use anyhow::anyhow;
 use gumdrop::{Options, ParsingStyle};
 use rand::seq::IteratorRandom;
-use std::path::{Path, PathBuf};
 use std::process::{self, Command};
 use std::{fs, str::FromStr};
+use std::{
+    path::{Path, PathBuf},
+    process::Stdio,
+};
 
 /// Set your wallpaper on Wayland or X11.
 #[derive(Options)]
@@ -115,8 +118,8 @@ fn work(args: Args) -> anyhow::Result<()> {
     }
 }
 
-// TODO Kill other instances of swagbg.
 fn swaybg(path: &Path) -> anyhow::Result<()> {
+    Command::new("pkill").arg("swaybg").output()?;
     Command::new("swaybg")
         .arg("-o")
         .arg("*")
@@ -124,6 +127,8 @@ fn swaybg(path: &Path) -> anyhow::Result<()> {
         .arg(path)
         .arg("-m")
         .arg("fill")
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
         .spawn()?;
     Ok(())
 }
