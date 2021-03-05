@@ -1,5 +1,16 @@
 # setwall
 
+## 1.1.0 (2021-03-05)
+
+#### Added
+
+- `--comp`/`-c` option to specify the target compositor. Current legal values
+  are `sway` and `x11`, with `x11` as the default.
+
+#### Changed
+
+- `-h` output is more useful.
+
 ## 1.0.3 (2020-07-18)
 
 #### Changed

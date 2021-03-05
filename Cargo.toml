@@ -1,6 +1,6 @@
 [package]
 name = "setwall"
-version = "1.0.3"
+version = "1.1.0"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2018"
 description = "Set your wallpaper on Wayland or X11."
