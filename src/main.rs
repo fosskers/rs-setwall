@@ -14,11 +14,11 @@ struct Args {
     help: bool,
 
     #[options(command)]
-    command: Option<Commands>,
+    command: Option<Cmd>,
 }
 
 #[derive(Options)]
-enum Commands {
+enum Cmd {
     /// Set a specific image file as the background.
     Set(Set),
     /// Choose a random image file from a given directory.
@@ -36,7 +36,7 @@ struct Set {
 
     /// The target output compositor. (values: sway, x11 [default])
     #[options(meta = "C")]
-    compositor: Compositor,
+    comp: Compositor,
 }
 
 #[derive(Options)]
@@ -48,8 +48,8 @@ struct Random {
     #[options(free)]
     dir: PathBuf,
 
-    /// The target output compositor.
-    compositor: Compositor,
+    /// The target output compositor. (values: sway, x11 [default])
+    comp: Compositor,
 }
 
 enum Compositor {
@@ -89,10 +89,16 @@ fn main() {
 
 fn work(args: Args) -> anyhow::Result<()> {
     match args.command {
-        Some(Commands::Set(Set { image, .. })) if image.is_file() => set_wall(&image),
-        Some(Commands::Random(Random { dir, .. })) if dir.is_dir() => {
+        Some(Cmd::Set(Set { image, comp, .. })) if image.is_file() => match comp {
+            Compositor::Sway => swaybg(&image),
+            Compositor::X11 => hsetroot(&image),
+        },
+        Some(Cmd::Random(Random { dir, comp, .. })) if dir.is_dir() => {
             let p = rand_img(&dir)?;
-            set_wall(&p)
+            match comp {
+                Compositor::Sway => swaybg(&p),
+                Compositor::X11 => hsetroot(&p),
+            }
         }
         Some(_) => Err(anyhow!("File doesn't exist!")),
         None => {
@@ -109,7 +115,20 @@ fn work(args: Args) -> anyhow::Result<()> {
     }
 }
 
-fn set_wall(path: &Path) -> anyhow::Result<()> {
+// TODO Kill other instances of swagbg.
+fn swaybg(path: &Path) -> anyhow::Result<()> {
+    Command::new("swaybg")
+        .arg("-o")
+        .arg("*")
+        .arg("-i")
+        .arg(path)
+        .arg("-m")
+        .arg("fill")
+        .output()?;
+    Ok(())
+}
+
+fn hsetroot(path: &Path) -> anyhow::Result<()> {
     Command::new("hsetroot").arg("-fill").arg(path).output()?;
     Ok(())
 }
