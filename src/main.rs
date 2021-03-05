@@ -124,7 +124,7 @@ fn swaybg(path: &Path) -> anyhow::Result<()> {
         .arg(path)
         .arg("-m")
         .arg("fill")
-        .output()?;
+        .spawn()?;
     Ok(())
 }
 
