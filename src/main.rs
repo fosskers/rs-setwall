@@ -3,12 +3,9 @@
 use anyhow::anyhow;
 use gumdrop::{Options, ParsingStyle};
 use rand::seq::IteratorRandom;
-use std::process::{self, Command};
-use std::{fs, str::FromStr};
-use std::{
-    path::{Path, PathBuf},
-    process::Stdio,
-};
+use std::path::{Path, PathBuf};
+use std::process::{self, Command, Stdio};
+use std::str::FromStr;
 
 /// Set your wallpaper on Wayland or X11.
 #[derive(Options)]
@@ -140,7 +137,7 @@ fn hsetroot(path: &Path) -> anyhow::Result<()> {
 
 /// Fetches a random image file from some directory.
 fn rand_img(dir: &Path) -> anyhow::Result<PathBuf> {
-    let files = fs::read_dir(dir)?;
+    let files = std::fs::read_dir(dir)?;
     let mut rng = rand::thread_rng();
     let image = files
         .filter_map(|p| p.ok())
