@@ -31,8 +31,8 @@ struct Set {
     help: bool,
 
     /// Sway output to set background to or X screen number if using X11
-    #[options(help = "sway output name(s) or X screen number")]
-    outputs: Vec<String>,
+    #[options(help = "sway output name or X screen number")]
+    output: Vec<String>,
 
     /// The path to the image file.
     #[options(free)]
@@ -53,8 +53,8 @@ struct Random {
     help: bool,
 
     /// Sway output to set background to or X screen number if using X11
-    #[options(help = "sway output name(s) or X screen number")]
-    outputs: Vec<String>,
+    #[options(help = "sway output name or X screen number")]
+    output: Vec<String>,
 
     /// The path to choose an image file from.
     #[options(free)]
@@ -105,43 +105,43 @@ fn main() {
 
 fn work(args: Args) -> anyhow::Result<()> {
     match args.command {
-        Some(Cmd::Set(Set { outputs, image, comp, kill_swaybg, .. })) if image.is_file() => match comp {
+        Some(Cmd::Set(Set { output, image, comp, kill_swaybg, .. })) if image.is_file() => match comp {
                 Compositor::Sway => {
                     if kill_swaybg {
                         Command::new("pkill").arg("swaybg").output()?;
                     }
                     let mut res: anyhow::Result<()> = Ok(());
-                    for output in outputs {
-                        res = swaybg(output.as_str(), &image)
+                    for o in output {
+                        res = swaybg(o.as_str(), &image)
                     }
                     res
                 },
                 Compositor::X11 => {
                     let mut res: anyhow::Result<()> = Ok(());
-                    for output in outputs {
-                        res = hsetroot(output.as_str(), &image)
+                    for o in output {
+                        res = hsetroot(o.as_str(), &image)
                     }
                     res
                 },
         },
-        Some(Cmd::Random(Random { outputs, dir, comp, kill_swaybg, .. })) if dir.is_dir() => {
+        Some(Cmd::Random(Random { output, dir, comp, kill_swaybg, .. })) if dir.is_dir() => {
             match comp {
                 Compositor::Sway => {
                     if kill_swaybg {
                         Command::new("pkill").arg("swaybg").output()?;
                     }
                     let mut res: anyhow::Result<()> = Ok(());
-                    for output in outputs {
+                    for o in output {
                         let p = rand_img(&dir)?;
-                        res = swaybg(output.as_str(), &p)
+                        res = swaybg(o.as_str(), &p)
                     }
                     res
                 },
                 Compositor::X11 => {
                     let mut res: anyhow::Result<()> = Ok(());
-                    for output in outputs {
+                    for o in output {
                         let p = rand_img(&dir)?;
-                        res = hsetroot(output.as_str(), &p)
+                        res = hsetroot(o.as_str(), &p)
                     }
                     res
                 },
