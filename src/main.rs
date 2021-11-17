@@ -30,6 +30,10 @@ struct Set {
     /// Print this help message.
     help: bool,
 
+    /// Sway output to set background to or X screen number if using X11
+    #[options(help = "sway output name(s) or X screen number")]
+    outputs: Vec<String>,
+
     /// The path to the image file.
     #[options(free)]
     image: PathBuf,
@@ -43,6 +47,10 @@ struct Set {
 struct Random {
     /// Print this help message.
     help: bool,
+
+    /// Sway output to set background to or X screen number if using X11
+    #[options(help = "sway output name(s) or X screen number")]
+    outputs: Vec<String>,
 
     /// The path to choose an image file from.
     #[options(free)]
@@ -89,15 +97,42 @@ fn main() {
 
 fn work(args: Args) -> anyhow::Result<()> {
     match args.command {
-        Some(Cmd::Set(Set { image, comp, .. })) if image.is_file() => match comp {
-            Compositor::Sway => swaybg(&image),
-            Compositor::X11 => hsetroot(&image),
+        Some(Cmd::Set(Set { outputs, image, comp, .. })) if image.is_file() => match comp {
+                Compositor::Sway => {
+                    let mut res: anyhow::Result<()> = Ok(());
+                    Command::new("pkill").arg("swaybg").output()?;
+                    for output in outputs {
+                        res = swaybg(output.as_str(), &image)
+                    }
+                    res
+                },
+                Compositor::X11 => {
+                    let mut res: anyhow::Result<()> = Ok(());
+                    for output in outputs {
+                        res = hsetroot(output.as_str(), &image)
+                    }
+                    res
+                },
         },
-        Some(Cmd::Random(Random { dir, comp, .. })) if dir.is_dir() => {
-            let p = rand_img(&dir)?;
+        Some(Cmd::Random(Random { outputs, dir, comp, .. })) if dir.is_dir() => {
             match comp {
-                Compositor::Sway => swaybg(&p),
-                Compositor::X11 => hsetroot(&p),
+                Compositor::Sway => {
+                    let mut res: anyhow::Result<()> = Ok(());
+                    Command::new("pkill").arg("swaybg").output()?;
+                    for output in outputs {
+                        let p = rand_img(&dir)?;
+                        res = swaybg(output.as_str(), &p)
+                    }
+                    res
+                },
+                Compositor::X11 => {
+                    let mut res: anyhow::Result<()> = Ok(());
+                    for output in outputs {
+                        let p = rand_img(&dir)?;
+                        res = hsetroot(output.as_str(), &p)
+                    }
+                    res
+                },
             }
         }
         Some(_) => Err(anyhow!("File doesn't exist!")),
@@ -115,11 +150,10 @@ fn work(args: Args) -> anyhow::Result<()> {
     }
 }
 
-fn swaybg(path: &Path) -> anyhow::Result<()> {
-    Command::new("pkill").arg("swaybg").output()?;
+fn swaybg(outputs: &str, path: &Path) -> anyhow::Result<()> {
     Command::new("swaybg")
         .arg("-o")
-        .arg("*")
+        .arg(outputs)
         .arg("-i")
         .arg(path)
         .arg("-m")
@@ -130,8 +164,8 @@ fn swaybg(path: &Path) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn hsetroot(path: &Path) -> anyhow::Result<()> {
-    Command::new("hsetroot").arg("-fill").arg(path).output()?;
+fn hsetroot(outputs: &str, path: &Path) -> anyhow::Result<()> {
+    Command::new("hsetroot").arg("-screens").arg(outputs).arg("-fill").arg(path).output()?;
     Ok(())
 }
 
