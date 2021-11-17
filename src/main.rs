@@ -41,6 +41,10 @@ struct Set {
     /// The target output compositor. (values: sway, x11 [default])
     #[options(meta = "C")]
     comp: Compositor,
+
+    /// Should the program kill existing swaybg processes
+    #[options(help = "kill existing swaybg processes")]
+    kill_swaybg: bool,
 }
 
 #[derive(Options)]
@@ -58,6 +62,10 @@ struct Random {
 
     /// The target output compositor. (values: sway, x11 [default])
     comp: Compositor,
+
+    /// Should the program kill existing swaybg processes
+    #[options(help = "kill existing swaybg processes")]
+    kill_swaybg: bool,
 }
 
 enum Compositor {
@@ -97,10 +105,12 @@ fn main() {
 
 fn work(args: Args) -> anyhow::Result<()> {
     match args.command {
-        Some(Cmd::Set(Set { outputs, image, comp, .. })) if image.is_file() => match comp {
+        Some(Cmd::Set(Set { outputs, image, comp, kill_swaybg, .. })) if image.is_file() => match comp {
                 Compositor::Sway => {
+                    if kill_swaybg {
+                        Command::new("pkill").arg("swaybg").output()?;
+                    }
                     let mut res: anyhow::Result<()> = Ok(());
-                    Command::new("pkill").arg("swaybg").output()?;
                     for output in outputs {
                         res = swaybg(output.as_str(), &image)
                     }
@@ -114,11 +124,13 @@ fn work(args: Args) -> anyhow::Result<()> {
                     res
                 },
         },
-        Some(Cmd::Random(Random { outputs, dir, comp, .. })) if dir.is_dir() => {
+        Some(Cmd::Random(Random { outputs, dir, comp, kill_swaybg, .. })) if dir.is_dir() => {
             match comp {
                 Compositor::Sway => {
+                    if kill_swaybg {
+                        Command::new("pkill").arg("swaybg").output()?;
+                    }
                     let mut res: anyhow::Result<()> = Ok(());
-                    Command::new("pkill").arg("swaybg").output()?;
                     for output in outputs {
                         let p = rand_img(&dir)?;
                         res = swaybg(output.as_str(), &p)
@@ -150,10 +162,10 @@ fn work(args: Args) -> anyhow::Result<()> {
     }
 }
 
-fn swaybg(outputs: &str, path: &Path) -> anyhow::Result<()> {
+fn swaybg(output: &str, path: &Path) -> anyhow::Result<()> {
     Command::new("swaybg")
         .arg("-o")
-        .arg(outputs)
+        .arg(output)
         .arg("-i")
         .arg(path)
         .arg("-m")
@@ -164,8 +176,8 @@ fn swaybg(outputs: &str, path: &Path) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn hsetroot(outputs: &str, path: &Path) -> anyhow::Result<()> {
-    Command::new("hsetroot").arg("-screens").arg(outputs).arg("-fill").arg(path).output()?;
+fn hsetroot(output: &str, path: &Path) -> anyhow::Result<()> {
+    Command::new("hsetroot").arg("-screens").arg(output).arg("-fill").arg(path).output()?;
     Ok(())
 }
 
