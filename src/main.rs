@@ -105,10 +105,14 @@ fn main() {
 
 fn work(args: Args) -> anyhow::Result<()> {
     match args.command {
-        Some(Cmd::Set(Set { output, image, comp, kill_swaybg, .. })) if image.is_file() => match comp {
+        Some(Cmd::Set(Set { mut output, image, comp, kill_swaybg, .. })) if image.is_file() => match comp {
                 Compositor::Sway => {
                     if kill_swaybg {
                         Command::new("pkill").arg("swaybg").output()?;
+                    }
+                    if output.is_empty() {
+                        output = Vec::new();
+                        output.push(String::from("*"));
                     }
                     let mut res: anyhow::Result<()> = Ok(());
                     for o in output {
@@ -117,6 +121,10 @@ fn work(args: Args) -> anyhow::Result<()> {
                     res
                 },
                 Compositor::X11 => {
+                    if output.is_empty() {
+                        output = Vec::new();
+                        output.push(std::option_env!("DISPLAY").unwrap_or(":0").to_string());
+                    }
                     let mut res: anyhow::Result<()> = Ok(());
                     for o in output {
                         res = hsetroot(o.as_str(), &image)
@@ -124,11 +132,15 @@ fn work(args: Args) -> anyhow::Result<()> {
                     res
                 },
         },
-        Some(Cmd::Random(Random { output, dir, comp, kill_swaybg, .. })) if dir.is_dir() => {
+        Some(Cmd::Random(Random { mut output, dir, comp, kill_swaybg, .. })) if dir.is_dir() => {
             match comp {
                 Compositor::Sway => {
                     if kill_swaybg {
                         Command::new("pkill").arg("swaybg").output()?;
+                    }
+                    if output.is_empty() {
+                        output = Vec::new();
+                        output.push(String::from("*"));
                     }
                     let mut res: anyhow::Result<()> = Ok(());
                     for o in output {
@@ -138,6 +150,10 @@ fn work(args: Args) -> anyhow::Result<()> {
                     res
                 },
                 Compositor::X11 => {
+                    if output.is_empty() {
+                        output = Vec::new();
+                        output.push(std::option_env!("DISPLAY").unwrap_or(":0").to_string());
+                    }
                     let mut res: anyhow::Result<()> = Ok(());
                     for o in output {
                         let p = rand_img(&dir)?;
