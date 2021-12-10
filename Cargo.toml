@@ -2,7 +2,7 @@
 name = "setwall"
 version = "1.1.0"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
-edition = "2018"
+edition = "2021"
 description = "Set your wallpaper on Wayland or X11."
 homepage = "https://github.com/fosskers/rs-setwall"
 repository = "https://github.com/fosskers/rs-setwall"
