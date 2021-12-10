@@ -1,5 +1,12 @@
 # setwall
 
+## 1.2.0 (2021-12-09)
+
+#### Added
+
+- `-o` flag to specify custom screen targets.
+- `-k` to prevent the existing `swaybg` process from being closed.
+
 ## 1.1.0 (2021-03-05)
 
 #### Added
