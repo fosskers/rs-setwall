@@ -102,72 +102,62 @@ fn main() {
 
 fn work(args: Args) -> anyhow::Result<()> {
     match args.command {
-        Some(Cmd::Set(Set {
-            mut output,
-            image,
-            comp,
-            kill: kill_swaybg,
-            ..
-        })) if image.is_file() => match comp {
+        Some(Cmd::Set(s)) if s.image.is_file() => match s.comp {
             Compositor::Sway => {
-                if kill_swaybg {
+                if s.kill {
                     Command::new("pkill").arg("swaybg").output()?;
                 }
-                if output.is_empty() {
-                    output = Vec::new();
-                    output.push(String::from("*"));
+
+                if s.output.is_empty() {
+                    swaybg("*", &s.image)
+                } else {
+                    for o in s.output {
+                        swaybg(&o, &s.image)?;
+                    }
+                    Ok(())
                 }
-                let mut res: anyhow::Result<()> = Ok(());
-                for o in output {
-                    res = swaybg(o.as_str(), &image)
-                }
-                res
             }
             Compositor::X11 => {
-                if output.is_empty() {
-                    output = Vec::new();
-                    output.push(std::option_env!("DISPLAY").unwrap_or(":0").to_string());
+                if s.output.is_empty() {
+                    let o = std::option_env!("DISPLAY").unwrap_or(":0");
+                    hsetroot(o, &s.image)
+                } else {
+                    for o in s.output {
+                        hsetroot(&o, &s.image)?;
+                    }
+                    Ok(())
                 }
-                let mut res: anyhow::Result<()> = Ok(());
-                for o in output {
-                    res = hsetroot(o.as_str(), &image)
-                }
-                res
             }
         },
-        Some(Cmd::Random(Random {
-            mut output,
-            dir,
-            comp,
-            kill: kill_swaybg,
-            ..
-        })) if dir.is_dir() => match comp {
+        Some(Cmd::Random(r)) if r.dir.is_dir() => match r.comp {
             Compositor::Sway => {
-                if kill_swaybg {
+                if r.kill {
                     Command::new("pkill").arg("swaybg").output()?;
                 }
-                if output.is_empty() {
-                    output = Vec::new();
-                    output.push(String::from("*"));
+
+                if r.output.is_empty() {
+                    let p = rand_img(&r.dir)?;
+                    swaybg("*", &p)
+                } else {
+                    for o in r.output {
+                        let p = rand_img(&r.dir)?;
+                        swaybg(o.as_str(), &p)?;
+                    }
+                    Ok(())
                 }
-                let mut res: anyhow::Result<()> = Ok(());
-                for o in output {
-                    let p = rand_img(&dir)?;
-                    res = swaybg(o.as_str(), &p)
-                }
-                res
             }
             Compositor::X11 => {
-                if output.is_empty() {
-                    output = Vec::new();
-                    output.push(std::option_env!("DISPLAY").unwrap_or(":0").to_string());
+                if r.output.is_empty() {
+                    let o = std::option_env!("DISPLAY").unwrap_or(":0");
+                    let p = rand_img(&r.dir)?;
+                    hsetroot(o, &p)
+                } else {
+                    for o in r.output {
+                        let p = rand_img(&r.dir)?;
+                        hsetroot(o.as_str(), &p)?;
+                    }
+                    Ok(())
                 }
-                let mut res: anyhow::Result<()> = Ok(());
-                for o in output {
-                    let p = rand_img(&dir)?;
-                    res = hsetroot(o.as_str(), &p)
-                }
-                res
             }
         },
         Some(_) => Err(anyhow!("File doesn't exist!")),
@@ -186,6 +176,7 @@ fn work(args: Args) -> anyhow::Result<()> {
 }
 
 fn swaybg(output: &str, path: &Path) -> anyhow::Result<()> {
+    eprintln!("Setting {} to {}", output, path.display());
     Command::new("swaybg")
         .arg("-o")
         .arg(output)
@@ -200,6 +191,7 @@ fn swaybg(output: &str, path: &Path) -> anyhow::Result<()> {
 }
 
 fn hsetroot(output: &str, path: &Path) -> anyhow::Result<()> {
+    eprintln!("Setting {} to {}", output, path.display());
     Command::new("hsetroot")
         .arg("-screens")
         .arg(output)
