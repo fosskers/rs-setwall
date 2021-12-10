@@ -22,7 +22,7 @@ Available commands:
   `hsetroot`.
 - Specify `-o`/`--output` to pick a Sway output or X screen if using X11. If
   this flag is missing, the image will be applied to all screens.
-- Specify `-k`/`--kill-swaybg` to kill existing swaybg processes.
+- Specify `-k`/`--keep` to prevent the existing `swaybg` from being closed.
 
 For instance:
 

@@ -3,6 +3,7 @@
 use anyhow::anyhow;
 use gumdrop::{Options, ParsingStyle};
 use rand::seq::IteratorRandom;
+use std::ops::Not;
 use std::path::{Path, PathBuf};
 use std::process::{self, Command, Stdio};
 use std::str::FromStr;
@@ -41,8 +42,8 @@ struct Set {
     #[options(meta = "COMP")]
     comp: Compositor,
 
-    /// Kill the existing swaybg processes as well
-    kill: bool,
+    /// Prevent the existing swaybg processes from being closed
+    keep: bool,
 }
 
 #[derive(Options)]
@@ -61,8 +62,8 @@ struct Random {
     #[options(meta = "COMP")]
     comp: Compositor,
 
-    /// Kill the existing swaybg processes as well
-    kill: bool,
+    /// Prevent the existing swaybg processes from being closed
+    keep: bool,
 }
 
 enum Compositor {
@@ -104,7 +105,7 @@ fn work(args: Args) -> anyhow::Result<()> {
     match args.command {
         Some(Cmd::Set(s)) if s.image.is_file() => match s.comp {
             Compositor::Sway => {
-                if s.kill {
+                if s.keep.not() {
                     Command::new("pkill").arg("swaybg").output()?;
                 }
 
@@ -131,7 +132,7 @@ fn work(args: Args) -> anyhow::Result<()> {
         },
         Some(Cmd::Random(r)) if r.dir.is_dir() => match r.comp {
             Compositor::Sway => {
-                if r.kill {
+                if r.keep.not() {
                     Command::new("pkill").arg("swaybg").output()?;
                 }
 
